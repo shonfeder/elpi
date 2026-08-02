@@ -40,3 +40,8 @@ let () =
       ~source_elpi:"unix.elpi"
       ~description:"unix APIs"
       ()
+
+let () = declare "sys"
+  ~source_elpi:"sys.elpi"
+  ~description:"Sys APIs"
+  ()

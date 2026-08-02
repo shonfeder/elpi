@@ -1,0 +1,44 @@
+type test.ok, test.error prop.
+
+test.error :-
+  FakeDir = "/tmp/non-existent/path/test-dir",
+  ErrMsg = "/tmp/non-existent/path/test-dir: No such file or directory",
+  std.spy-do! [
+    mkdir FakeDir 493 (error MkErrMsg),
+    MkErrMsg = ErrMsg,
+    rmdir FakeDir (error RmErrMsg),
+    RmErrMsg = ErrMsg,
+    is_directory FakeDir (error IsErrMsg),
+    IsErrMsg = ErrMsg,
+    chdir FakeDir (error ChErrMsg),
+    ChErrMsg = ErrMsg,
+    readdir FakeDir _ (error ReadErrMsg),
+    ReadErrMsg = ErrMsg
+  ].
+
+test.ok :-
+  TestDir = "/tmp/test-dir",
+  AltTestDir = "/tmp/alt-test-dir",
+  std.spy-do! [
+    not (file_exists TestDir),
+    mkdir TestDir 493 ok,
+    file_exists TestDir,
+    is_directory TestDir ok,
+    rename TestDir AltTestDir ok,
+    not (file_exists TestDir),
+    file_exists AltTestDir,
+    chdir AltTestDir ok,
+    getcwd Cwd ok,
+    Cwd = AltTestDir,
+    system "touch ./test-file" 0,
+    file_exists "./test-file",
+    rename "./test-file" "./alt-test-file" ok,
+    readdir "." Contents ok,
+    Contents = ["alt-test-file"],
+    file_exists "./alt-test-file",
+    remove "./alt-test-file" ok,
+    rmdir AltTestDir ok,
+    not (file_exists AltTestDir),
+  ].
+
+main :- std.spy-do! [ test.ok, test.error ].
